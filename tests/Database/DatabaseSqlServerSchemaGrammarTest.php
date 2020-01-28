@@ -803,6 +803,18 @@ class DatabaseSqlServerSchemaGrammarTest extends TestCase
         $this->assertSame("N'中文', N'測試'", $this->getGrammar()->quoteString(['中文', '測試']));
     }
 
+    public function testCompileTableExists()
+    {
+        $this->assertSame("
+            DECLARE @table nvarchar(255) = ?
+            select objects.*
+            from sys.objects
+            inner join sys.schemas on objects.schema_id = schemas.schema_id
+            where objects.type = 'U' and ( schemas.name + '.' + objects.name = @table or objects.name = @table )" ,
+            $this->getGrammar()->compileTableExists()
+        );
+    }
+
     protected function getConnection()
     {
         return m::mock(Connection::class);
